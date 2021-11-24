@@ -144,8 +144,12 @@ def get_signed_download_url(
     bucket_name = bucket_name or settings.AWS_STORAGE_BUCKET_NAME
     s3 = boto3.client(
         "s3",
+        region_name=settings.S3UPLOAD_REGION,
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        # TODO: remove signature_version once boto3 makes v4 the default
+        # (see https://github.com/boto/botocore/issues/2109#issuecomment-663155273)
+        config=boto3.session.Config(signature_version="s3v4")
     )
     download_url = s3.generate_presigned_url(
         "get_object", Params={"Bucket": bucket_name, "Key": key}, ExpiresIn=ttl
